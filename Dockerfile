@@ -1,55 +1,33 @@
-# Use Python 3.12 slim image as base
 FROM python:3.12-slim
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PYTHONPATH=/app/src
+# Evitar prompts interactivos
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    g++ \
+# Dependencias del sistema (para Camoufox / Chrome headless si se usa)
+RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
+    git \
+    wget \
     gnupg \
-    libnss3 \
-    libatk-bridge2.0-0 \
-    libdrm2 \
-    libxkbcommon0 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    libgbm1 \
-    libxss1 \
-    libasound2 \
-    libatspi0 \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first to leverage Docker cache
+# Copiar requirements primero (cache layer)
 COPY requirements.txt .
 
-# Install Python dependencies
+# Instalar dependencias Python
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright browsers (needed for automation)
-RUN playwright install chromium firefox --with-deps
-
-# Install Camoufox browser if needed
-RUN pip install camoufox
-
-# Copy the rest of the application
+# Copiar el resto del proyecto
 COPY . .
 
-# Expose port (can be overridden at runtime)
+# Exponer puerto de la API
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/dashboard || exit 1
-
-# Run the application
-CMD ["python", "-m", "src.main"]
+# Comando de arranque
+CMD ["python", "src/main.py"]
