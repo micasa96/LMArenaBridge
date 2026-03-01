@@ -1,0 +1,18 @@
+{
+  "password": "admin",
+  "auth_tokens": [],
+  "api_keys": [
+    {
+      "name": "Default Key",
+      "key": "",
+      "rpm": 100,
+      "created": "2023-01-01T00:00:00Z"
+    }
+  ],
+  "usage_stats": {},
+  "prune_invalid_tokens": false,
+  "persist_arena_auth_cookie": false,
+  "camoufox_proxy_window_mode": "invisible",
+  "camoufox_fetch_window_mode": "invisible",
+  "chrome_fetch_window_mode": "invisible"
+}

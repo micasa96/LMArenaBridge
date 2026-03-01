@@ -232,3 +232,74 @@ sudo systemctl enable lmarenabridge
 sudo systemctl start lmarenabridge
 sudo systemctl status lmarenabridge
 ```
+
+## Docker Deployment
+
+### Using Docker Compose (Recommended)
+
+1. Create a `.env` file based on `.env.example`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Customize the `.env` file with your preferred settings:
+   ```bash
+   PORT=8000
+   ADMIN_PASSWORD=your_secure_password_here
+   LM_BRIDGE_DISABLE_USERSCRIPT_PROXY=false
+   ```
+
+3. Run the service:
+   ```bash
+   docker-compose up -d
+   ```
+
+### Using Docker directly
+
+1. Build the image:
+   ```bash
+   docker build -t lmarenabridge .
+   ```
+
+2. Run the container:
+   ```bash
+   docker run -d --name lmarenabridge -p 8000:8000 \
+     -e PORT=8000 \
+     -e ADMIN_PASSWORD=your_secure_password_here \
+     -e LM_BRIDGE_DISABLE_USERSCRIPT_PROXY=false \
+     -v $(pwd)/config.json:/app/config.json:rw \
+     -v $(pwd)/models.json:/app/models.json:rw \
+     lmarenabridge
+   ```
+
+### Environment Variables
+
+- `PORT`: Port to run the server on (default: 8000)
+- `ADMIN_PASSWORD`: Password for the admin dashboard (default: admin, but should be changed!)
+- `LM_BRIDGE_DISABLE_USERSCRIPT_PROXY`: Disable the userscript proxy functionality (default: false)
+- `CONFIG_FILE`: Path to the config file (default: config.json)
+- `MODELS_FILE`: Path to the models file (default: models.json)
+
+### Volumes
+
+Mount these volumes to persist configuration:
+- `/app/config.json`: Authentication tokens and API keys
+- `/app/models.json`: Available models configuration
+
+### Accessing the Service
+
+After starting the container, you can access:
+- Dashboard: `http://localhost:8000/dashboard`
+- Login: `http://localhost:8000/login`
+- API Base URL: `http://localhost:8000/api/v1`
+
+### Security Notice
+
+**IMPORTANT**: The default admin password is "admin". For production use, you should:
+1. Set a strong `ADMIN_PASSWORD` environment variable
+2. Or update the `config.json` file with a secure password
+3. Consider restricting access to the dashboard port
+
+## GitHub Actions
+
+The project includes Docker support for GitHub Actions deployment. See `.github/workflows/deploy.yml` for deployment configuration.

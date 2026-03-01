@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  lmarenabridge:
+    build: .
+    container_name: lmarenabridge
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      - PORT=${PORT:-8000}
+      - LM_BRIDGE_DISABLE_USERSCRIPT_PROXY=${LM_BRIDGE_DISABLE_USERSCRIPT_PROXY:-false}
+      - PYTHONPATH=/app/src
+    volumes:
+      - ./config.json:/app/config.json:rw
+      - ./models.json:/app/models.json:rw
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/dashboard"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

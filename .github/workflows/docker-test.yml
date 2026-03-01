@@ -1,0 +1,45 @@
+name: Test Docker Build
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test-docker-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t lmarenabridge:test .
+          
+      - name: Test Docker image
+        run: |
+          # Run the container briefly to test if it starts properly
+          docker run --rm -d --name test-container -p 8000:8000 \
+            -e PORT=8000 \
+            -e LM_BRIDGE_DISABLE_USERSCRIPT_PROXY=true \
+            lmarenabridge:test
+          
+          # Wait a moment for the container to start
+          sleep 10
+          
+          # Check if the container is running
+          if [ "$(docker ps -q -f name=test-container)" ]; then
+              echo "Container is running successfully"
+              docker stop test-container
+          else
+              echo "Container failed to start"
+              exit 1
+          fi
