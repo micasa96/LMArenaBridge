@@ -596,7 +596,7 @@ async def fetch_lmarena_stream_via_chrome(
     payload: dict,
     auth_token: str,
     timeout_seconds: int = 120,
-    headless: bool = False, # Default to Headful for better reliability
+    headless: bool = True, # Default to headless for Docker compatibility
     max_recaptcha_attempts: int = 3,
 ) -> Optional[BrowserFetchStreamResponse]:
     """
@@ -1151,12 +1151,12 @@ async def fetch_lmarena_stream_via_camoufox(
         return isinstance(body, dict) and body.get("error") == "recaptcha validation failed"
 
     try:
-        # Default to headful for better Turnstile/reCAPTCHA reliability; allow override via config.
+        # Default to headless for Docker compatibility; allow override via config.
         try:
             headless_value = config.get("camoufox_fetch_headless", None)
-            headless = bool(headless_value) if headless_value is not None else False
+            headless = bool(headless_value) if headless_value is not None else True
         except Exception:
-            headless = False
+            headless = True
 
         async with _m().AsyncCamoufox(headless=headless, main_world_eval=True) as browser:
             context = await browser.new_context(user_agent=user_agent or None)
@@ -1779,7 +1779,7 @@ async def camoufox_proxy_worker():
                 user_agent = _m().normalize_user_agent_value(cfg.get("user_agent"))
                 
                 headless_value = cfg.get("camoufox_proxy_headless", None)
-                headless = bool(headless_value) if headless_value is not None else False
+                headless = bool(headless_value) if headless_value is not None else True
                 launch_timeout = float(cfg.get("camoufox_proxy_launch_timeout_seconds", 90))
                 launch_timeout = max(20.0, min(launch_timeout, 300.0))
 
