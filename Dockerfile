@@ -22,29 +22,8 @@ RUN playwright install-deps firefox 2>/dev/null || true && \
 COPY . .
 
 # FIX: config.json con headless=true para Docker (sin display X11)
-RUN python -c "
-import json, os
-path = 'config.json'
-default = {
-    'admin_password': 'changeme',
-    'api_keys': [],
-    'arena_tokens': [],
-    'rate_limit': 60,
-    'debug': False,
-    'camoufox_proxy_headless': True,
-    'camoufox_fetch_headless': True
-}
-if not os.path.exists(path):
-    open(path, 'w').write(json.dumps(default, indent=2))
-else:
-    try:
-        cfg = json.load(open(path))
-        cfg['camoufox_proxy_headless'] = True
-        cfg['camoufox_fetch_headless'] = True
-        open(path, 'w').write(json.dumps(cfg, indent=2))
-    except Exception:
-        open(path, 'w').write(json.dumps(default, indent=2))
-"
+COPY docker-config-init.py /tmp/docker-config-init.py
+RUN python /tmp/docker-config-init.py
 
 EXPOSE 8000
 
