@@ -1,11 +1,9 @@
 name: Test Docker Build
-
 on:
   push:
     branches: [ "main", "develop" ]
   pull_request:
     branches: [ "main" ]
-
 jobs:
   test-docker-build:
     runs-on: ubuntu-latest
@@ -23,23 +21,28 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t lmarenabridge:test .
-          
+
       - name: Test Docker image
         run: |
-          # Run the container briefly to test if it starts properly
+          # Run the container
           docker run --rm -d --name test-container -p 8000:8000 \
             -e PORT=8000 \
             -e LM_BRIDGE_DISABLE_USERSCRIPT_PROXY=true \
             lmarenabridge:test
-          
-          # Wait a moment for the container to start
-          sleep 10
-          
-          # Check if the container is running
+
+          # Darle más tiempo — Playwright/Camoufox tarda en inicializar
+          sleep 20
+
+          # Mostrar logs SIEMPRE (para debug aunque pase o falle)
+          echo "=== CONTAINER LOGS ==="
+          docker logs test-container 2>&1 || true
+          echo "=== END LOGS ==="
+
+          # Verificar si sigue corriendo
           if [ "$(docker ps -q -f name=test-container)" ]; then
-              echo "Container is running successfully"
+              echo "✅ Container is running successfully"
               docker stop test-container
           else
-              echo "Container failed to start"
+              echo "❌ Container failed to start — see logs above"
               exit 1
           fi
